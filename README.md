@@ -144,107 +144,75 @@ Returns server health status.
 
 ## Cloudflare Email Worker Setup
 
-To forward emails from Cloudflare to your webhook server, create an Email Worker with the following code:
+To forward emails from Cloudflare to your webhook server with properly parsed email content (no headers clutter), use the worker code provided in `cloudflare-worker.js`.
 
-```javascript
-export default {
-  async email(message, env, ctx) {
-    const webhookUrl = "https://your-server.com/api/webhook";
-    const apiKey = "your-secret-api-key-here";
-    
-    try {
-      // Extract email data
-      const emailData = {
-        to: message.to,
-        from: message.from,
-        subject: message.headers.get('subject') || '',
-        body: await streamToString(message.raw),
-        html_body: await streamToString(message.raw), // Parse as needed
-        has_attachments: false, // Detect based on your needs
-        headers: {
-          date: message.headers.get('date'),
-          'message-id': message.headers.get('message-id'),
-        }
-      };
+### Quick Setup
 
-      // Send to webhook
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': apiKey
-        },
-        body: JSON.stringify(emailData)
-      });
+1. **Copy the worker code** from `cloudflare-worker.js` in this repository
+2. **Update the configuration** at the top of the file:
+   ```javascript
+   const webhookUrl = "https://your-server.com/api/webhook";  // Your server URL
+   const apiKey = "your-secret-api-key-here";                  // Match your .env file
+   ```
+3. **Deploy to Cloudflare Workers** via the dashboard
+4. **Configure email routing** to use this worker
 
-      if (response.ok) {
-        console.log(`Email forwarded successfully to webhook`);
-      } else {
-        console.error(`Failed to forward email: ${response.status} ${response.statusText}`);
-      }
-    } catch (error) {
-      console.error(`Error processing email: ${error.message}`);
-    }
-  }
-}
+### What This Worker Does
 
-// Helper function to convert stream to string
-async function streamToString(stream) {
-  const chunks = [];
-  const reader = stream.getReader();
-  
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      chunks.push(value);
-    }
-  } finally {
-    reader.releaseLock();
-  }
-  
-  const uint8Array = new Uint8Array(
-    chunks.reduce((acc, chunk) => acc + chunk.length, 0)
-  );
-  
-  let offset = 0;
-  for (const chunk of chunks) {
-    uint8Array.set(chunk, offset);
-    offset += chunk.length;
-  }
-  
-  return new TextDecoder().decode(uint8Array);
+The worker properly parses emails to extract:
+- **Text body**: Clean text content from `text/plain` parts
+- **HTML body**: HTML content from `text/html` parts
+- **Subject, From, To**: Basic email metadata
+
+It handles multipart/alternative emails correctly, so you'll receive clean content like:
+```json
+{
+  "body": "kali ini",
+  "html_body": "<div dir=\"ltr\">kali ini</div>",
+  "subject": "baru"
 }
 ```
 
-### Simplified Worker Example (Basic Text Only)
+Instead of the raw email with all headers and MIME boundaries.
+
+### Alternative: Simple Version (Metadata Only)
+
+If you only need to know that an email arrived (good for OTP notifications where you just need the subject):
 
 ```javascript
 export default {
-  async email(message, env, ctx) {
-    const webhookUrl = "https://your-server.com/api/webhook";
-    const apiKey = "your-secret-api-key-here";
-    
-    // Create email data object
-    const emailData = {
-      to: message.to,
-      from: message.from,
-      subject: message.headers.get('subject') || 'No Subject',
-      body: `Email from ${message.from} to ${message.to}`,
-      html_body: "",
-      has_attachments: false
-    };
+    async email(message, env, ctx) {
+        const webhookUrl = "https://your-server.com/api/webhook";
+        const apiKey = "your-secret-api-key-here";
+        
+        try {
+            const emailData = {
+                to: message.to,
+                from: message.from,
+                subject: message.headers.get('subject') || 'No Subject',
+                body: `Email received from ${message.from}`,
+                html_body: "",
+                has_attachments: false
+            };
 
-    // Send to webhook
-    await fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': apiKey
-      },
-      body: JSON.stringify(emailData)
-    });
-  }
+            const response = await fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-Key': apiKey
+                },
+                body: JSON.stringify(emailData)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Webhook returned ${response.status}`);
+            }
+
+            console.log('Email forwarded successfully');
+        } catch (error) {
+            console.error('Error:', error.message);
+        }
+    }
 }
 ```
 

@@ -26,6 +26,10 @@ WORKDIR /root/
 # Copy the binary from builder
 COPY --from=builder /app/flarebox .
 
+# Copy templates and static files
+COPY --from=builder /app/templates ./templates
+COPY --from=builder /app/static ./static
+
 # Create data directory
 RUN mkdir -p data
 

@@ -5,13 +5,12 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
-	"simple-email-server/handlers"
-	"simple-email-server/middleware"
-	"simple-email-server/storage"
+	"flarebox/handlers"
+	"flarebox/middleware"
+	"flarebox/storage"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -23,33 +22,86 @@ func main() {
 		log.Println("No .env file found, using system environment variables")
 	}
 
-	// Get configuration from environment
-	port := getEnv("PORT", "8080")
-	apiKey := os.Getenv("API_KEY")
-	if apiKey == "" {
-		log.Fatal("API_KEY environment variable is required")
+	// Initialize database
+	dbPath := os.Getenv("DATABASE_PATH")
+	if dbPath == "" {
+		dbPath = "./settings.db"
 	}
 
-	cleanupIntervalMin := getEnvAsInt("CLEANUP_INTERVAL_MINUTES", 30)
-	cleanupInactiveHours := getEnvAsInt("CLEANUP_INACTIVE_HOURS", 6)
+	// Initialize database
+	if err := storage.InitDB(dbPath); err != nil {
+		log.Fatal("Failed to initialize database:", err)
+	}
+	defer storage.CloseDB()
 
-	// Create router
+	// Get port from environment or use default
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "2525"
+	}
+
+	// Initialize templates
+	if err := handlers.InitTemplates(); err != nil {
+		log.Fatal("Failed to load templates:", err)
+	}
+
+	// Setup router
 	r := mux.NewRouter()
 
-	// Routes
-	r.HandleFunc("/api/webhook", middleware.APIKeyAuth(handlers.WebhookHandler)).Methods("POST")
-	r.HandleFunc("/api/email/{domain}/{username}/", handlers.GetEmailsHandler).Methods("GET")
-	
+	// Serve static files
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+
 	// Health check endpoint
 	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	}).Methods("GET")
 
-	// Start cleanup goroutine
+	// UI Routes (public)
+	r.HandleFunc("/login", handlers.ServeLogin).Methods("GET")
+	r.HandleFunc("/login", handlers.HandleLoginForm).Methods("POST")
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+	}).Methods("GET")
+
+	// UI Routes (authenticated with cookie)
+	uiAuth := r.NewRoute().Subrouter()
+	uiAuth.Use(middleware.SessionAuthCookie)
+	uiAuth.HandleFunc("/dashboard", handlers.ServeDashboard).Methods("GET")
+	uiAuth.HandleFunc("/settings", handlers.ServeSettings).Methods("GET")
+	uiAuth.HandleFunc("/logout", handlers.HandleLogoutUI).Methods("POST")
+	uiAuth.HandleFunc("/partials/api-keys", handlers.ServeAPIKeysPartial).Methods("GET")
+	uiAuth.HandleFunc("/partials/domains", handlers.ServeDomainsPartial).Methods("GET")
+	uiAuth.HandleFunc("/partials/settings", handlers.ServeSettingsPartial).Methods("GET")
+	uiAuth.HandleFunc("/partials/generate-email", handlers.ServeGeneratorPartial).Methods("GET")
+
+	// Dashboard inbox routes
+	uiAuth.HandleFunc("/dashboard/addresses", handlers.DashboardAddressesHandler).Methods("GET")
+	uiAuth.HandleFunc("/dashboard/emails/{domain}/{username}", handlers.DashboardEmailsHandler).Methods("GET")
+	uiAuth.HandleFunc("/dashboard/email/{domain}/{username}/{id}", handlers.DashboardEmailBodyHandler).Methods("GET")
+	uiAuth.HandleFunc("/add-domain", handlers.HandleAddDomain).Methods("POST")
+	uiAuth.HandleFunc("/delete-domain/{domain}", handlers.HandleDeleteDomain).Methods("DELETE")
+	uiAuth.HandleFunc("/update-settings", handlers.HandleUpdateSettingsUI).Methods("POST")
+	uiAuth.HandleFunc("/regenerate-key", handlers.HandleRegenerateKeyUI).Methods("POST")
+	uiAuth.HandleFunc("/change-password", handlers.HandleChangePasswordUI).Methods("POST")
+	uiAuth.HandleFunc("/change-username", handlers.HandleChangeUsernameUI).Methods("POST")
+
+	// API routes
+	api := r.PathPrefix("/api").Subrouter()
+
+	// Webhook endpoint (protected by webhook API key)
+	api.HandleFunc("/webhook", middleware.WebhookAuth(handlers.WebhookHandler)).Methods("POST")
+
+	// Email retrieval endpoint (protected by client API key)
+	api.HandleFunc("/email/{domain}/{username}/", middleware.ClientAuth(handlers.GetEmailsHandler)).Methods("GET")
+
+	// Random domains and email endpoints (protected by client API key)
+	api.HandleFunc("/random-domains/", middleware.ClientAuth(handlers.GetRandomDomainsHandler)).Methods("GET")
+	api.HandleFunc("/random-email", middleware.ClientAuth(handlers.GetRandomEmailHandler)).Methods("GET")
+
+	// Start cleanup goroutine with database-based settings
 	stopCleanup := make(chan bool)
-	go runCleanupJob(time.Duration(cleanupIntervalMin)*time.Minute, 
-		time.Duration(cleanupInactiveHours)*time.Hour, stopCleanup)
+	go runCleanupJob(stopCleanup)
 
 	// Setup graceful shutdown
 	go func() {
@@ -58,35 +110,61 @@ func main() {
 		<-sigint
 		log.Println("Shutting down gracefully...")
 		stopCleanup <- true
+		storage.CloseDB()
 		os.Exit(0)
 	}()
 
 	// Start server
-	addr := ":" + port
-	log.Printf("Server starting on port %s", port)
-	log.Printf("Cleanup job will run every %d minutes", cleanupIntervalMin)
-	log.Printf("Files inactive for %d hours will be deleted", cleanupInactiveHours)
-	
-	if err := http.ListenAndServe(addr, r); err != nil {
+	server := &http.Server{
+		Addr:         ":" + port,
+		Handler:      r,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
+	log.Println("🚀 FlareBox")
+	log.Printf("📍 Server running on http://localhost:%s", port)
+	log.Println("🔑 Default login: admin / 123456 (change after first login)")
+
+	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
 }
 
-// runCleanupJob periodically cleans up inactive email files
-func runCleanupJob(interval, inactivityDuration time.Duration, stop chan bool) {
+// runCleanupJob periodically cleans up inactive email files based on database settings
+func runCleanupJob(stop chan bool) {
+	// Get cleanup settings from database
+	db := storage.GetDB()
+	var intervalMinutes, inactiveHours int
+	err := db.QueryRow("SELECT cleanup_interval_minutes, cleanup_inactive_hours FROM settings WHERE id = 1").
+		Scan(&intervalMinutes, &inactiveHours)
+
+	if err != nil {
+		log.Printf("Failed to get cleanup settings, using defaults: %v", err)
+		intervalMinutes = 30
+		inactiveHours = 6
+	}
+
+	interval := time.Duration(intervalMinutes) * time.Minute
+	inactivityDuration := time.Duration(inactiveHours) * time.Hour
+
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
-	// Run cleanup immediately on start
-	log.Println("Running initial cleanup check...")
-	if err := storage.CleanupInactiveFiles(inactivityDuration); err != nil {
-		log.Printf("Cleanup error: %v", err)
-	}
+	// Run cleanup immediately on start (silent)
+	storage.CleanupInactiveFiles(inactivityDuration)
 
 	for {
 		select {
 		case <-ticker.C:
-			log.Println("Running scheduled cleanup check...")
+			// Refresh settings from database each time
+			db := storage.GetDB()
+			db.QueryRow("SELECT cleanup_interval_minutes, cleanup_inactive_hours FROM settings WHERE id = 1").
+				Scan(&intervalMinutes, &inactiveHours)
+			inactivityDuration = time.Duration(inactiveHours) * time.Hour
+
+			// Run cleanup silently (only log errors)
 			if err := storage.CleanupInactiveFiles(inactivityDuration); err != nil {
 				log.Printf("Cleanup error: %v", err)
 			}
@@ -95,26 +173,4 @@ func runCleanupJob(interval, inactivityDuration time.Duration, stop chan bool) {
 			return
 		}
 	}
-}
-
-// getEnv gets an environment variable with a default value
-func getEnv(key, defaultValue string) string {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultValue
-	}
-	return value
-}
-
-// getEnvAsInt gets an environment variable as integer with a default value
-func getEnvAsInt(key string, defaultValue int) int {
-	valueStr := os.Getenv(key)
-	if valueStr == "" {
-		return defaultValue
-	}
-	value, err := strconv.Atoi(valueStr)
-	if err != nil {
-		return defaultValue
-	}
-	return value
 }

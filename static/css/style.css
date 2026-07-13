@@ -1,0 +1,1321 @@
+/* Modern Email Server UI - Clean Design System */
+
+/* Reset and Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Color System - Emerald Accent */
+    --accent: #059669;
+    --accent-hover: #047857;
+    --accent-light: #d1fae5;
+
+    /* Semantic Colors */
+    --success: #10b981;
+    --danger: #dc2626;
+    --warning: #f59e0b;
+
+    /* Zinc Neutrals - Light Mode */
+    --bg-base: #fafafa;
+    --bg-elevated: #ffffff;
+    --bg-subtle: #f4f4f5;
+    --bg-hover: #e4e4e7;
+
+    --border-default: #e4e4e7;
+    --border-strong: #d4d4d8;
+
+    --text-primary: #18181b;
+    --text-secondary: #52525b;
+    --text-tertiary: #a1a1aa;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+}
+
+/* Dark Mode - System Preference */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --accent: #10b981;
+        --accent-hover: #34d399;
+        --accent-light: #064e3b;
+
+        --bg-base: #09090b;
+        --bg-elevated: #18181b;
+        --bg-subtle: #27272a;
+        --bg-hover: #3f3f46;
+
+        --border-default: #27272a;
+        --border-strong: #3f3f46;
+
+        --text-primary: #fafafa;
+        --text-secondary: #a1a1aa;
+        --text-tertiary: #71717a;
+
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+        --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+    }
+}
+
+/* Dark Mode - Manual Override */
+[data-theme="dark"] {
+    --accent: #10b981;
+    --accent-hover: #34d399;
+    --accent-light: #064e3b;
+
+    --bg-base: #09090b;
+    --bg-elevated: #18181b;
+    --bg-subtle: #27272a;
+    --bg-hover: #3f3f46;
+
+    --border-default: #27272a;
+    --border-strong: #3f3f46;
+
+    --text-primary: #fafafa;
+    --text-secondary: #a1a1aa;
+    --text-tertiary: #71717a;
+
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+}
+
+/* Light Mode - Manual Override (to override system dark mode preference) */
+[data-theme="light"] {
+    --accent: #059669;
+    --accent-hover: #047857;
+    --accent-light: #d1fae5;
+
+    --bg-base: #fafafa;
+    --bg-elevated: #ffffff;
+    --bg-subtle: #f4f4f5;
+    --bg-hover: #e4e4e7;
+
+    --border-default: #e4e4e7;
+    --border-strong: #d4d4d8;
+
+    --text-primary: #18181b;
+    --text-secondary: #52525b;
+    --text-tertiary: #a1a1aa;
+
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .navbar {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="dark"] .navbar {
+    background: rgba(24, 24, 27, 0.8);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background: var(--bg-base);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Navigation */
+.navbar {
+    background: var(--bg-elevated);
+    border-bottom: 1px solid var(--border-default);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.8);
+}
+
+@media (prefers-color-scheme: dark) {
+    .navbar {
+        background: rgba(24, 24, 27, 0.8);
+    }
+}
+
+.nav-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.025em;
+}
+
+.nav-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.nav-user {
+    padding: 0.5rem 0.875rem;
+    background: var(--bg-subtle);
+    border-radius: 6px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+/* Container */
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Login Page */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.login-card {
+    background: var(--bg-elevated);
+    border-radius: 12px;
+    border: 1px solid var(--border-default);
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 420px;
+    padding: 3rem;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.login-icon {
+    width: 56px;
+    height: 56px;
+    background: var(--accent);
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.login-header h1 {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+}
+
+.login-header p {
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+}
+
+.login-footer {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-default);
+    text-align: center;
+}
+
+/* Dashboard */
+.dashboard {
+    display: grid;
+    gap: 2rem;
+}
+
+.dashboard-header {
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-default);
+}
+
+.dashboard-header h1 {
+    color: var(--text-primary);
+    margin-bottom: 0.375rem;
+    font-size: 1.875rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+}
+
+/* Cards */
+.card {
+    background: var(--bg-elevated);
+    border-radius: 12px;
+    border: 1px solid var(--border-default);
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+}
+
+.card:hover {
+    border-color: var(--border-strong);
+}
+
+.card-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-default);
+    background: var(--bg-subtle);
+}
+
+.card-header h2 {
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: -0.0125em;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Forms */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid var(--border-default);
+    border-radius: 6px;
+    font-size: 0.9375rem;
+    transition: all 0.15s ease;
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+
+    .form-group input:focus,
+    .form-group select:focus {
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+    }
+}
+
+.form-group small {
+    display: block;
+    margin-top: 0.375rem;
+    color: var(--text-tertiary);
+    font-size: 0.8125rem;
+}
+
+/* Buttons */
+.btn {
+    padding: 0.625rem 1.25rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: inherit;
+}
+
+/* Material Icons in buttons */
+.btn .material-icons {
+    font-size: 1.125rem;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.btn-sm .material-icons {
+    font-size: 1rem;
+}
+
+/* Theme toggle button */
+.theme-toggle {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-default);
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-toggle:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-strong);
+}
+
+.theme-toggle .material-icons {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background: var(--bg-subtle);
+    color: var(--text-primary);
+    border: 1px solid var(--border-default);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-strong);
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+    transform: translateY(-1px);
+}
+
+.btn-warning {
+    background: var(--warning);
+    color: white;
+}
+
+.btn-warning:hover {
+    background: #d97706;
+    transform: translateY(-1px);
+}
+
+.btn-sm {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+}
+
+.btn-block {
+    width: 100%;
+    display: flex;
+}
+
+/* API Keys */
+.api-keys-section {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.key-group {
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    padding: 1.25rem;
+    background: var(--bg-subtle);
+}
+
+.key-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.key-header strong {
+    font-size: 0.9375rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.key-display {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+}
+
+.key-display code {
+    background: var(--bg-elevated);
+    padding: 0.875rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-default);
+    font-family: ui-monospace, 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+    font-size: 0.8125rem;
+    word-break: break-all;
+    color: var(--text-primary);
+}
+
+.key-masked {
+    -webkit-text-security: disc;
+    text-security: disc;
+}
+
+.key-actions {
+    display: flex;
+    gap: 0.625rem;
+    flex-wrap: wrap;
+}
+
+/* Generator */
+.email-display-inline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.generated-email-text {
+    font-family: ui-monospace, 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+    font-size: 1rem;
+    color: var(--text-primary);
+    font-weight: 500;
+    flex: 1;
+}
+
+.copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    white-space: nowrap;
+}
+
+.copy-btn .material-icons {
+    font-size: 1rem;
+}
+
+/* Responsive for generator */
+@media (max-width: 768px) {
+    .email-display-inline {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .copy-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Domains */
+.domain-add-form {
+    display: flex;
+    gap: 0.625rem;
+    margin-bottom: 1.25rem;
+}
+
+.domain-add-form input {
+    flex: 1;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid var(--border-default);
+    border-radius: 6px;
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+}
+
+.domain-list {
+    list-style: none;
+    display: grid;
+    gap: 0.625rem;
+}
+
+.domain-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.875rem 1rem;
+    background: var(--bg-subtle);
+    border-radius: 6px;
+    border: 1px solid var(--border-default);
+    transition: all 0.15s ease;
+}
+
+.domain-item:hover {
+    border-color: var(--border-strong);
+    background: var(--bg-hover);
+}
+
+.domain-name {
+    font-family: ui-monospace, 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 0.9375rem;
+}
+
+/* Alerts */
+.alert {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.25rem;
+    border: 1px solid;
+}
+
+.alert-warning {
+    background: #fef3c7;
+    border-color: var(--warning);
+    color: #78350f;
+}
+
+@media (prefers-color-scheme: dark) {
+    .alert-warning {
+        background: rgba(245, 158, 11, 0.1);
+        border-color: rgba(245, 158, 11, 0.3);
+        color: #fbbf24;
+    }
+}
+
+.alert strong {
+    font-weight: 600;
+}
+
+/* Error and Success Messages */
+.error-message {
+    padding: 0.875rem;
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    display: none;
+}
+
+.error-message:not(:empty) {
+    display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+    .error-message {
+        background: rgba(220, 38, 38, 0.1);
+        border-color: rgba(220, 38, 38, 0.3);
+        color: #fca5a5;
+    }
+}
+
+.success-message {
+    padding: 0.875rem;
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+}
+
+@media (prefers-color-scheme: dark) {
+    .success-message {
+        background: rgba(16, 185, 129, 0.1);
+        border-color: rgba(16, 185, 129, 0.3);
+        color: #6ee7b7;
+    }
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--bg-elevated);
+    border-radius: 12px;
+    border: 1px solid var(--border-default);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-default);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.modal-close {
+    background: var(--bg-subtle);
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 0;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.modal-content form {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 0.625rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+
+/* Utility Classes */
+.text-muted {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+code {
+    background: var(--bg-subtle);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-family: ui-monospace, 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+    font-size: 0.875em;
+    color: var(--text-primary);
+}
+
+/* HTMX Indicators */
+.htmx-indicator {
+    display: none;
+}
+
+.htmx-request .htmx-indicator {
+    display: inline-block;
+}
+
+.htmx-request.htmx-indicator {
+    display: inline-block;
+}
+
+/* Smooth transitions */
+@media (prefers-reduced-motion: no-preference) {
+
+    .card,
+    .btn,
+    .domain-item,
+    .form-group input,
+    .form-group select {
+        transition: all 0.15s ease;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Bento Grid Layout */
+.bento-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.bento-item {
+    background: var(--bg-elevated);
+    border-radius: 12px;
+    border: 1px solid var(--border-default);
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+}
+
+.bento-item:hover {
+    border-color: var(--border-strong);
+}
+
+.bento-item-large {
+    grid-row: span 3;
+}
+
+.bento-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-default);
+    background: var(--bg-subtle);
+}
+
+.bento-header h2 {
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: -0.0125em;
+}
+
+.bento-body {
+    padding: 1.5rem;
+}
+
+/* Account Settings Specific */
+.account-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding: 0.875rem 1rem;
+    background: var(--bg-subtle);
+    border-radius: 6px;
+    border: 1px solid var(--border-default);
+}
+
+.account-info strong {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.account-info .username-badge {
+    font-family: ui-monospace, 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 0.9375rem;
+}
+
+.account-section {
+    margin-bottom: 2rem;
+}
+
+.account-section:last-child {
+    margin-bottom: 0;
+}
+
+.account-section h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.section-divider {
+    height: 1px;
+    background: var(--border-default);
+    margin: 1.5rem 0;
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-default);
+    color: var(--text-primary);
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 0;
+    font-size: 1.125rem;
+}
+
+.theme-toggle:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-strong);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .bento-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bento-item-large {
+        grid-row: span 1;
+    }
+
+    .container {
+        padding: 1rem;
+    }
+
+    .nav-container {
+        padding: 1rem;
+    }
+
+    .nav-brand {
+        font-size: 1rem;
+    }
+
+    .login-card {
+        padding: 2rem;
+    }
+
+    .card-body {
+        padding: 1.25rem;
+    }
+
+    .key-actions {
+        flex-direction: column;
+    }
+
+    .key-actions .btn {
+        width: 100%;
+    }
+
+    .domain-add-form {
+        flex-direction: column;
+    }
+
+    .email-parts {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .dashboard-header {
+        padding-bottom: 1rem;
+    }
+
+    .dashboard-header h1 {
+        font-size: 1.5rem;
+    }
+}
+
+/* ============================================
+   EMAIL INBOX STYLES
+   ============================================ */
+
+/* Email Generator Card */
+.email-generator-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.generator-header h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+}
+
+.generator-body {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+/* Email Inbox Container */
+.email-inbox-container {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.inbox-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-default);
+    background: var(--bg-subtle);
+}
+
+.inbox-header h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.btn-text {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.btn-text:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+/* Email Address Item */
+.email-address-item {
+    border-bottom: 1px solid var(--border-default);
+}
+
+.email-address-item:last-child {
+    border-bottom: none;
+}
+
+.email-address-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--bg-elevated);
+}
+
+.email-address-row:hover {
+    background: var(--bg-subtle);
+}
+
+.email-address-row:active {
+    background: var(--bg-hover);
+}
+
+.address-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.email-address {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+}
+
+.email-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+.email-count {
+    padding: 0.25rem 0.625rem;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 12px;
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+.email-time {
+    color: var(--text-tertiary);
+    font-size: 0.8125rem;
+}
+
+.expand-icon {
+    color: var(--text-tertiary);
+    font-size: 20px;
+    transition: transform 0.3s;
+}
+
+.email-address-row:hover .expand-icon {
+    color: var(--text-secondary);
+}
+
+/* Email List Container (appears above the row) */
+.email-list-container {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease-out;
+}
+
+.email-list-container:not(:empty) {
+    max-height: 2000px;
+    transition: max-height 0.5s ease-in;
+}
+
+/* Emails Expanded View */
+.emails-expanded {
+    background: var(--bg-base);
+    border-top: 1px solid var(--border-default);
+    border-bottom: 1px solid var(--border-default);
+    padding: 0.5rem;
+}
+
+.email-item {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+}
+
+.email-item:last-child {
+    margin-bottom: 0;
+}
+
+.email-header {
+    padding: 0.875rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.email-header:hover {
+    background: var(--bg-subtle);
+}
+
+.email-subject {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.375rem;
+    line-height: 1.4;
+}
+
+.email-meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.8125rem;
+}
+
+.email-sender {
+    color: var(--text-secondary);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.email-meta-row .email-time {
+    color: var(--text-tertiary);
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+/* Email Body Container */
+.email-body-container {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease-out;
+}
+
+.email-body-container:not(:empty) {
+    max-height: 2000px;
+    transition: max-height 0.4s ease-in;
+}
+
+.email-body {
+    border-top: 1px solid var(--border-default);
+    background: var(--bg-base);
+    padding: 1rem;
+}
+
+.email-body-content {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    max-width: 100%;
+    overflow-wrap: break-word;
+}
+
+.email-body-content pre {
+    background: var(--bg-subtle);
+    padding: 0.75rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 0.8125rem;
+}
+
+.email-body-content a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.email-body-content a:hover {
+    text-decoration: underline;
+}
+
+/* Empty States */
+.empty-inbox {
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.empty-inbox p {
+    font-size: 0.9375rem;
+    margin: 0;
+}
+
+.no-emails {
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: var(--text-tertiary);
+}
+
+.no-emails p {
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.loading {
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 0.9375rem;
+}
+
+/* Dashboard Header Update */
+.dashboard-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-header .btn-secondary {
+    white-space: nowrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .email-generator-card {
+        padding: 1rem;
+    }
+
+    .generator-body {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .inbox-header {
+        padding: 1rem;
+    }
+
+    .email-address-row {
+        padding: 0.875rem 1rem;
+    }
+
+    .address-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .email-meta {
+        gap: 0.5rem;
+    }
+
+    .email-address {
+        font-size: 0.875rem;
+    }
+
+    .email-header {
+        padding: 0.75rem;
+    }
+
+    .email-subject {
+        font-size: 0.875rem;
+    }
+
+    .email-meta-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.375rem;
+    }
+
+    .email-body {
+        padding: 0.75rem;
+    }
+
+    .dashboard-header {
+        flex-wrap: wrap;
+    }
+}

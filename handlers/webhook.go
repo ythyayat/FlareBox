@@ -5,11 +5,12 @@ import (
 	"net/http"
 	"time"
 
-	"simple-email-server/models"
-	"simple-email-server/storage"
+	"flarebox/models"
+	"flarebox/storage"
 )
 
 // WebhookHandler handles incoming webhook requests from Cloudflare Email Worker
+// Note: This handler is protected by WebhookAuth middleware
 func WebhookHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

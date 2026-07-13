@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"simple-email-server/models"
+	"flarebox/models"
 )
 
 const (
@@ -17,7 +17,7 @@ const (
 )
 
 var (
-	mu       sync.RWMutex
+	mu        sync.RWMutex
 	idCounter = make(map[string]int) // Track IDs per email address
 )
 
@@ -208,6 +208,132 @@ func CleanupInactiveFiles(inactivityDuration time.Duration) error {
 	}
 
 	return nil
+}
+
+// EmailAddressSummary represents an email address with metadata
+type EmailAddressSummary struct {
+	Address    string    `json:"address"`
+	Domain     string    `json:"domain"`
+	Username   string    `json:"username"`
+	Count      int       `json:"count"`
+	LatestDate time.Time `json:"latest_date"`
+}
+
+// GetAllEmailAddresses returns all email addresses with message counts and latest dates
+func GetAllEmailAddresses() ([]EmailAddressSummary, error) {
+	mu.RLock()
+	defer mu.RUnlock()
+
+	var summaries []EmailAddressSummary
+
+	// Check if data directory exists
+	if _, err := os.Stat(dataDir); os.IsNotExist(err) {
+		return summaries, nil
+	}
+
+	// Walk through all domain directories
+	err := filepath.Walk(dataDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// Skip directories and non-JSON files
+		if info.IsDir() || filepath.Ext(path) != ".json" {
+			return nil
+		}
+
+		// Read the email file
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return nil // Skip files we can't read
+		}
+
+		var emailList models.EmailList
+		if err := json.Unmarshal(data, &emailList); err != nil {
+			return nil // Skip files we can't parse
+		}
+
+		// Skip empty email lists
+		if len(emailList.Emails) == 0 {
+			return nil
+		}
+
+		// Extract domain and username from path
+		rel, _ := filepath.Rel(dataDir, path)
+		parts := strings.Split(rel, string(filepath.Separator))
+		if len(parts) != 2 {
+			return nil
+		}
+
+		domain := parts[0]
+		username := strings.TrimSuffix(parts[1], ".json")
+
+		// Find latest email date
+		latestDate := emailList.Emails[0].Date
+		for _, email := range emailList.Emails {
+			if email.Date.After(latestDate) {
+				latestDate = email.Date
+			}
+		}
+
+		summaries = append(summaries, EmailAddressSummary{
+			Address:    fmt.Sprintf("%s@%s", username, domain),
+			Domain:     domain,
+			Username:   username,
+			Count:      len(emailList.Emails),
+			LatestDate: latestDate,
+		})
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to scan email files: %w", err)
+	}
+
+	// Sort by latest date (newest first)
+	for i := 0; i < len(summaries)-1; i++ {
+		for j := i + 1; j < len(summaries); j++ {
+			if summaries[j].LatestDate.After(summaries[i].LatestDate) {
+				summaries[i], summaries[j] = summaries[j], summaries[i]
+			}
+		}
+	}
+
+	return summaries, nil
+}
+
+// GetEmailByID retrieves a specific email by ID for a given address
+func GetEmailByID(domain, username string, id int) (*models.Email, error) {
+	mu.RLock()
+	defer mu.RUnlock()
+
+	filePath := filepath.Join(dataDir, domain, username+".json")
+
+	// Check if file exists
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return nil, fmt.Errorf("email address not found")
+	}
+
+	// Read file
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var emailList models.EmailList
+	if err := json.Unmarshal(data, &emailList); err != nil {
+		return nil, fmt.Errorf("failed to parse emails: %w", err)
+	}
+
+	// Find email by ID
+	for _, email := range emailList.Emails {
+		if email.ID == id {
+			return &email, nil
+		}
+	}
+
+	return nil, fmt.Errorf("email not found")
 }
 
 // parseEmailAddress splits email address into domain and username

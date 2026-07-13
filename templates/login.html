@@ -1,0 +1,31 @@
+{{define "content"}}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-icon">ES</div>
+            <h1>Welcome Back</h1>
+            <p>Sign in to access your email server dashboard</p>
+        </div>
+
+        <div id="error-message" class="error-message"></div>
+
+        <form hx-post="/login" hx-target="#error-message" hx-swap="innerHTML">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required autocomplete="username">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+        </form>
+
+        <div class="login-footer">
+            <p class="text-muted">Default: admin / 123456</p>
+        </div>
+    </div>
+</div>
+{{end}}

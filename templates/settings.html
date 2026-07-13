@@ -1,0 +1,108 @@
+{{define "content"}}
+<div class="container">
+    <div class="dashboard">
+        <div class="dashboard-header">
+            <h1>Settings</h1>
+            <p class="text-muted">Manage your account, API keys, domains, and server configuration</p>
+        </div>
+
+        <div class="bento-grid">
+            <!-- Domain Management -->
+            <div class="bento-item">
+                <div class="bento-header">
+                    <h2>Domains</h2>
+                </div>
+                <div class="bento-body" hx-get="/partials/domains" hx-trigger="load" hx-swap="innerHTML">
+                    <p class="text-muted">Loading...</p>
+                </div>
+            </div>
+
+            <!-- Account Settings -->
+            <div class="bento-item">
+                <div class="bento-header">
+                    <h2>Account</h2>
+                </div>
+                <div class="bento-body">
+                    <div class="account-info">
+                        <strong>Current Username:</strong>
+                        <span class="username-badge">{{.Username}}</span>
+                    </div>
+
+                    <!-- Change Username -->
+                    <div class="account-section">
+                        <h3>Change Username</h3>
+                        <form hx-post="/change-username" hx-target="#username-message" hx-swap="innerHTML">
+                            <div class="form-group">
+                                <label for="new_username">New Username</label>
+                                <input type="text" id="new_username" name="new_username" required minlength="3">
+                                <small>Minimum 3 characters</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="current_password_username">Current Password</label>
+                                <input type="password" id="current_password_username" name="current_password" required>
+                                <small>Required for security verification</small>
+                            </div>
+                            <div id="username-message" class="error-message"></div>
+                            <button type="submit" class="btn btn-primary btn-block">Update Username</button>
+                        </form>
+                    </div>
+
+                    <div class="section-divider"></div>
+
+                    <!-- Change Password -->
+                    <div class="account-section">
+                        <h3>Change Password</h3>
+                        <form hx-post="/change-password" hx-swap="none"
+                            hx-on::after-request="if(event.detail.successful) { event.detail.elt.reset(); showToast('Password changed successfully!'); }">
+                            <div class="form-group">
+                                <label for="old_password">Current Password</label>
+                                <input type="password" id="old_password" name="old_password" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="new_password">New Password</label>
+                                <input type="password" id="new_password" name="new_password" required minlength="8">
+                                <small>Minimum 8 characters</small>
+                            </div>
+                            <div id="password-message" class="error-message"></div>
+                            <button type="submit" class="btn btn-primary btn-block">Update Password</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Keys -->
+            <div class="bento-item">
+                <div class="bento-header">
+                    <h2>API Keys</h2>
+                </div>
+                <div class="bento-body" hx-get="/partials/api-keys" hx-trigger="load" hx-swap="innerHTML">
+                    <p class="text-muted">Loading...</p>
+                </div>
+            </div>
+
+            <!-- Server Settings -->
+            <div class="bento-item">
+                <div class="bento-header">
+                    <h2>Server Settings</h2>
+                </div>
+                <div class="bento-body" hx-get="/partials/settings" hx-trigger="load" hx-swap="innerHTML">
+                    <p class="text-muted">Loading...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Handle username change success
+    document.body.addEventListener('htmx:afterRequest', function (evt) {
+        if (evt.detail.elt.action === '/change-username' && evt.detail.successful) {
+            document.getElementById('username-message').className = 'success-message';
+            document.getElementById('username-message').textContent = 'Username updated successfully! Please log in again.';
+            setTimeout(function () {
+                window.location.href = '/login';
+            }, 2000);
+        }
+    });
+</script>
+{{end}}

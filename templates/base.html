@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - Email Server</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+
+<body>
+    {{if .ShowNav}}
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <div class="nav-icon">FB</div>
+                <span>FlareBox</span>
+            </div>
+            <div class="nav-menu">
+                <a href="/dashboard"
+                    style="text-decoration: none; color: var(--text-secondary); font-size: 0.9375rem; font-weight: 500; transition: color 0.15s;">Dashboard</a>
+                <a href="/settings"
+                    style="text-decoration: none; color: var(--text-secondary); font-size: 0.9375rem; font-weight: 500; transition: color 0.15s;">Settings</a>
+                <button id="theme-toggle" class="theme-toggle" title="Toggle dark mode">
+                    <i id="theme-icon" class="material-icons">dark_mode</i>
+                </button>
+                <span class="nav-user">{{.Username}}</span>
+                <form action="/logout" method="POST" style="margin: 0;">
+                    <button type="submit" class="btn btn-secondary btn-sm">Logout</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+    {{end}}
+
+    {{template "content" .}}
+
+    <script src="/static/js/app.js"></script>
+</body>
+
+</html>

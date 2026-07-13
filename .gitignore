@@ -4,6 +4,16 @@
 # Email data storage
 data/
 
+# Database files
+settings.db
+settings.db-journal
+*.db
+*.db-journal
+
+# Compiled binaries
+flarebox
+email-server
+
 # Go build artifacts
 *.exe
 *.exe~
@@ -15,6 +25,19 @@ data/
 
 # Go workspace
 go.work
+
+# Test coverage
+coverage.txt
+coverage.html
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
 
 # IDE
 .idea/

@@ -1,0 +1,47 @@
+<div class="api-keys-section">
+    <div class="key-group">
+        <div class="key-header">
+            <strong>Webhook API Key</strong>
+        </div>
+        <div class="key-display">
+            <code id="webhook-key" class="key-masked">{{.WebhookKey}}</code>
+            <div class="key-actions">
+                <button onclick="toggleMask('webhook-key')" class="btn btn-secondary btn-sm" title="Show/Hide">
+                    <i class="material-icons">visibility</i>
+                </button>
+                <button onclick="copyToClipboard('{{.WebhookKey}}')" class="btn btn-secondary btn-sm"
+                    title="Copy to clipboard">
+                    <i class="material-icons">content_copy</i>
+                </button>
+                <button hx-post="/regenerate-key?type=webhook" hx-target="closest .bento-body" hx-swap="innerHTML"
+                    hx-confirm="Regenerate webhook API key? This will invalidate the current key."
+                    class="btn btn-warning btn-sm">
+                    <i class="material-icons">refresh</i> Regenerate
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="key-group">
+        <div class="key-header">
+            <strong>Client API Key</strong>
+        </div>
+        <div class="key-display">
+            <code id="client-key" class="key-masked">{{.ClientKey}}</code>
+            <div class="key-actions">
+                <button onclick="toggleMask('client-key')" class="btn btn-secondary btn-sm" title="Show/Hide">
+                    <i class="material-icons">visibility</i>
+                </button>
+                <button onclick="copyToClipboard('{{.ClientKey}}')" class="btn btn-secondary btn-sm"
+                    title="Copy to clipboard">
+                    <i class="material-icons">content_copy</i>
+                </button>
+                <button hx-post="/regenerate-key?type=client" hx-target="closest .bento-body" hx-swap="innerHTML"
+                    hx-confirm="Regenerate client API key? This will invalidate the current key."
+                    class="btn btn-warning btn-sm">
+                    <i class="material-icons">refresh</i> Regenerate
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,24 @@
+<div id="domain-error" class="error-message"></div>
+
+<form class="domain-add-form" hx-post="/add-domain" hx-target="#domain-list" hx-swap="beforeend">
+    <input type="text" name="domain" placeholder="example.com" id="domain-input" required>
+    <button type="submit" class="btn btn-primary">
+        Add Domain
+    </button>
+</form>
+
+<ul class="domain-list" id="domain-list">
+    {{range .Domains}}
+    <li class="domain-item">
+        <span class="domain-name">{{.}}</span>
+        <button hx-delete="/delete-domain/{{.}}" hx-target="closest .domain-item" hx-swap="outerHTML"
+            hx-confirm="Delete domain '{{.}}'?" class="btn btn-sm btn-danger">
+            Delete
+        </button>
+    </li>
+    {{end}}
+</ul>
+
+{{if not .Domains}}
+<p class="text-muted">No domains configured. Add a domain to start generating emails.</p>
+{{end}}

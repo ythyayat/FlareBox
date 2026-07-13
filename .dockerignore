@@ -1,0 +1,66 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Build artifacts and binaries
+flarebox
+email-server
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Runtime data (mounted as volumes, not baked into image)
+data/
+settings.db
+settings.db-journal
+*.db
+*.db-journal
+
+# Environment files (use docker-compose environment instead)
+.env
+.env.*
+
+# Documentation (not needed in container)
+README.md
+API_TESTING.md
+
+# Scripts and workers (not needed in container)
+cloudflare-worker.js
+test_api.sh
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# CI/CD (if you add these later)
+.github/
+.gitlab-ci.yml
+
+# Go workspace
+go.work
+go.work.sum
+
+# Test coverage
+coverage.txt
+coverage.html
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp

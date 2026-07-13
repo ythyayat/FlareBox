@@ -1,0 +1,18 @@
+<form hx-post="/update-settings" hx-swap="none"
+    hx-on::after-request="if(event.detail.successful) showToast('Settings updated successfully!')">
+    <div class="form-group">
+        <label for="cleanup_interval_minutes">Cleanup Interval (minutes)</label>
+        <input type="number" id="cleanup_interval_minutes" name="cleanup_interval_minutes"
+            value="{{.CleanupIntervalMinutes}}" min="1" required>
+        <small>How often the cleanup job runs</small>
+    </div>
+
+    <div class="form-group">
+        <label for="cleanup_inactive_hours">Inactive Period (hours)</label>
+        <input type="number" id="cleanup_inactive_hours" name="cleanup_inactive_hours" value="{{.CleanupInactiveHours}}"
+            min="1" required>
+        <small>Delete emails inactive for this duration</small>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Settings</button>
+</form>

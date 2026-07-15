@@ -86,7 +86,6 @@ func DashboardAddressesHandler(w http.ResponseWriter, r *http.Request) {
 		timeAgo := formatTimeAgo(addr.LatestDate)
 		safeID := "emails-" + sanitizeForID(addr.Domain) + "-" + sanitizeForID(addr.Username)
 		html := `<div class="email-address-item">
-			<div class="email-list-container" id="` + safeID + `"></div>
 			<div class="email-address-row" 
 				hx-get="/dashboard/emails/` + addr.Domain + `/` + addr.Username + `"
 				hx-target="#` + safeID + `"
@@ -100,6 +99,7 @@ func DashboardAddressesHandler(w http.ResponseWriter, r *http.Request) {
 				</div>
 				<span class="material-icons expand-icon">expand_more</span>
 			</div>
+			<div class="email-list-container" id="` + safeID + `"></div>
 		</div>`
 		w.Write([]byte(html))
 	}
@@ -171,8 +171,25 @@ func DashboardEmailBodyHandler(w http.ResponseWriter, r *http.Request) {
 		body = email.HTMLBody
 	}
 
-	html := `<div class="email-body">
-		<div class="email-body-content">` + body + `</div>
+	recipient := username + "@" + domain
+	timeStr := email.Date.Format("Monday, January 2, 2006 at 3:04 PM")
+
+	html := `<div class="email-detail-view">
+		<div class="email-detail-header">
+			<h2 class="email-detail-subject">` + escapeHTML(email.Subject) + `</h2>
+			<div class="email-detail-meta">
+				<div class="email-meta-item">
+					<strong>From:</strong> <span>` + escapeHTML(email.Sender) + `</span>
+				</div>
+				<div class="email-meta-item">
+					<strong>To:</strong> <span>` + escapeHTML(recipient) + `</span>
+				</div>
+				<div class="email-meta-item">
+					<strong>Date:</strong> <span>` + timeStr + `</span>
+				</div>
+			</div>
+		</div>
+		<div class="email-detail-body">` + body + `</div>
 	</div>`
 
 	w.Write([]byte(html))
@@ -185,7 +202,17 @@ func sanitizeForID(s string) string {
 }
 
 func formatTimeAgo(t time.Time) string {
-	duration := time.Since(t)
+	// Normalize to UTC for consistent comparison
+	now := time.Now().UTC()
+	emailTime := t.UTC()
+
+	// Handle future dates or equal times
+	if emailTime.After(now) || emailTime.Equal(now) {
+		return "just now"
+	}
+
+	// Calculate duration
+	duration := now.Sub(emailTime)
 
 	if duration < time.Minute {
 		return "just now"
@@ -199,7 +226,7 @@ func formatTimeAgo(t time.Time) string {
 		days := int(duration.Hours() / 24)
 		return strconv.Itoa(days) + " day" + plural(days) + " ago"
 	} else {
-		return t.Format("Jan 2, 2006")
+		return emailTime.Format("Jan 2, 2006")
 	}
 }
 

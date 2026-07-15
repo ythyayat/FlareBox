@@ -172,6 +172,198 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+// Email Inbox Split-Pane Functionality with URL State Management
+(function () {
+    // Get URL parameter
+    function getURLParam(name) {
+        const params = new URLSearchParams(window.location.search);
+        return params.get(name);
+    }
+
+    // Set URL parameter without reload
+    function setURLParam(name, value) {
+        const url = new URL(window.location);
+        if (value) {
+            url.searchParams.set(name, value);
+        } else {
+            url.searchParams.delete(name);
+        }
+        window.history.replaceState({}, '', url);
+    }
+
+    // Setup click handlers for email items
+    function setupEmailClickHandlers() {
+        // Handle email address row clicks (expand/collapse email list)
+        document.querySelectorAll('.email-address-row').forEach(row => {
+            if (row.dataset.clickHandler) return;
+            row.dataset.clickHandler = 'true';
+
+            row.addEventListener('click', function (e) {
+                const targetId = this.getAttribute('hx-target');
+                if (!targetId) return;
+
+                const target = document.querySelector(targetId);
+                const icon = this.querySelector('.expand-icon');
+
+                // If content already loaded, just toggle visibility
+                if (target && target.innerHTML.trim() !== '') {
+                    // IMPORTANT: Prevent default FIRST to stop HTMX
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // Toggle the visible class
+                    target.classList.toggle('visible');
+
+                    // Update icon rotation based on new state
+                    if (icon) {
+                        icon.style.transform = target.classList.contains('visible')
+                            ? 'rotate(180deg)'
+                            : 'rotate(0deg)';
+                    }
+
+                    return; // Exit early
+                }
+
+                // First time - let HTMX load, rotate icon down
+                if (icon) icon.style.transform = 'rotate(180deg)';
+                // Don't preventDefault - let HTMX load the content
+            }, true); // Use capture phase to run before HTMX
+        });
+
+        // Handle individual email clicks (load into right panel)
+        document.querySelectorAll('.email-item').forEach(item => {
+            if (item.dataset.clickHandler) return;
+            item.dataset.clickHandler = 'true';
+
+            item.addEventListener('click', function (e) {
+                const emailHeader = this.querySelector('.email-header');
+                if (!emailHeader) return;
+
+                const emailURL = emailHeader.getAttribute('hx-get');
+                if (!emailURL) return;
+
+                // Remove selected state from all emails
+                document.querySelectorAll('.email-item').forEach(el => {
+                    el.classList.remove('selected');
+                });
+
+                // Add selected state to this email
+                this.classList.add('selected');
+
+                // Load email body into right panel
+                fetch(emailURL, {
+                    headers: {
+                        'Accept': 'text/html'
+                    }
+                })
+                    .then(response => response.text())
+                    .then(html => {
+                        const viewer = document.getElementById('email-body-viewer');
+                        if (viewer) {
+                            viewer.innerHTML = html;
+                        }
+
+                        // Update URL with email ID
+                        const emailId = emailURL.split('/').pop();
+                        setURLParam('email', emailURL.replace('/dashboard/email/', '').replace(/\//g, '-'));
+                    })
+                    .catch(err => {
+                        console.error('Failed to load email:', err);
+                        showToast('Failed to load email');
+                    });
+
+                e.stopPropagation();
+                e.preventDefault();
+            });
+        });
+    }
+
+    // Auto-select email from URL on page load
+    function autoSelectFromURL() {
+        const emailParam = getURLParam('email');
+        if (!emailParam) return;
+
+        // Format: domain-username-id
+        const parts = emailParam.split('-');
+        if (parts.length < 3) return;
+
+        const id = parts.pop();
+        const username = parts.pop();
+        const domain = parts.join('-');
+
+        // Find and expand the address if needed
+        const addressRow = Array.from(document.querySelectorAll('.email-address-row')).find(row => {
+            const target = row.getAttribute('hx-target');
+            return target && target.includes(domain) && target.includes(username);
+        });
+
+        if (addressRow) {
+            const targetId = addressRow.getAttribute('hx-target');
+            const target = document.querySelector(targetId);
+
+            // Expand if not already expanded
+            if (target && !target.classList.contains('visible')) {
+                // Trigger HTMX load if needed
+                if (!target.innerHTML.trim()) {
+                    htmx.trigger(addressRow, 'click');
+                } else {
+                    target.classList.add('visible');
+                    const icon = addressRow.querySelector('.expand-icon');
+                    if (icon) icon.style.transform = 'rotate(180deg)';
+                }
+
+                // Wait a bit for emails to load, then select
+                setTimeout(() => {
+                    const emailURL = `/dashboard/email/${domain}/${username}/${id}`;
+                    const emailItem = Array.from(document.querySelectorAll('.email-header')).find(header => {
+                        return header.getAttribute('hx-get') === emailURL;
+                    });
+
+                    if (emailItem) {
+                        emailItem.closest('.email-item').click();
+                    }
+                }, 500);
+            } else if (target && target.classList.contains('visible')) {
+                // Already expanded, just select the email
+                const emailURL = `/dashboard/email/${domain}/${username}/${id}`;
+                const emailItem = Array.from(document.querySelectorAll('.email-header')).find(header => {
+                    return header.getAttribute('hx-get') === emailURL;
+                });
+
+                if (emailItem) {
+                    emailItem.closest('.email-item').click();
+                }
+            }
+        }
+    }
+
+    // Initialize
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+            setupEmailClickHandlers();
+            setTimeout(autoSelectFromURL, 100);
+        });
+    } else {
+        setupEmailClickHandlers();
+        setTimeout(autoSelectFromURL, 100);
+    }
+
+    // Re-setup after HTMX loads new content
+    document.body.addEventListener('htmx:afterSwap', function (event) {
+        setupEmailClickHandlers();
+
+        // Auto-show newly loaded email lists
+        if (event.target.classList.contains('email-list-container')) {
+            event.target.classList.add('visible');
+        }
+
+        // Try to auto-select from URL after content loads
+        if (event.target.id === 'email-addresses-list') {
+            setTimeout(autoSelectFromURL, 100);
+        }
+    });
+})();
+
 // Dark Mode Toggle - Initialize immediately for theme application
 (function () {
     // Get saved theme from localStorage or default to light

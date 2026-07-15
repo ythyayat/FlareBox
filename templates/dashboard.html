@@ -26,17 +26,31 @@
             </div>
         </div>
 
-        <!-- Email Inbox -->
-        <div class="email-inbox-container">
-            <div class="inbox-header">
-                <h2>Your Email Addresses</h2>
-                <button hx-get="/dashboard/addresses" hx-target="#email-addresses-list" hx-swap="innerHTML"
-                    class="btn btn-text">
-                    <span class="material-icons" style="font-size: 18px;">refresh</span>
-                </button>
+        <!-- Email Inbox - Split Pane Layout -->
+        <div class="email-split-container">
+            <!-- Left Panel: Email List -->
+            <div class="email-list-panel">
+                <div class="inbox-header">
+                    <h2>Your Emails</h2>
+                    <button hx-get="/dashboard/addresses" hx-target="#email-addresses-list" hx-swap="innerHTML"
+                        class="btn btn-text">
+                        <span class="material-icons" style="font-size: 18px;">refresh</span>
+                    </button>
+                </div>
+                <div id="email-addresses-list" hx-get="/dashboard/addresses" hx-trigger="load" hx-swap="innerHTML">
+                    <div class="loading">Loading emails...</div>
+                </div>
             </div>
-            <div id="email-addresses-list" hx-get="/dashboard/addresses" hx-trigger="load" hx-swap="innerHTML">
-                <div class="loading">Loading emails...</div>
+
+            <!-- Right Panel: Email Body -->
+            <div class="email-body-panel">
+                <div id="email-body-viewer">
+                    <div class="empty-email-state">
+                        <span class="material-icons"
+                            style="font-size: 64px; color: var(--text-tertiary);">mail_outline</span>
+                        <p>Select an email to read</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

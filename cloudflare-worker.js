@@ -122,11 +122,56 @@ function extractBodyFromPart(part) {
         return '';
     }
 
+    // Get the headers section
+    const headers = sections[0];
+
     // Join all sections after the headers and clean up
     let content = sections.slice(1).join('\n\n');
 
     // Remove any trailing boundary markers
     content = content.replace(/--[a-z0-9]+--\s*$/gi, '');
 
+    // Check for Content-Transfer-Encoding
+    const encodingMatch = headers.match(/Content-Transfer-Encoding:\s*([^\r\n]+)/i);
+    const encoding = encodingMatch ? encodingMatch[1].trim().toLowerCase() : '7bit';
+
+    // Decode based on encoding type
+    if (encoding === 'quoted-printable') {
+        content = decodeQuotedPrintable(content);
+    } else if (encoding === 'base64') {
+        content = decodeBase64(content);
+    }
+
     return content.trim();
+}
+
+/**
+ * Decode quoted-printable encoded text
+ * Converts =XX sequences to actual characters and handles soft line breaks
+ */
+function decodeQuotedPrintable(text) {
+    // Replace soft line breaks (= at end of line)
+    text = text.replace(/=\r?\n/g, '');
+
+    // Decode =XX sequences
+    text = text.replace(/=([0-9A-F]{2})/gi, (match, hex) => {
+        return String.fromCharCode(parseInt(hex, 16));
+    });
+
+    return text;
+}
+
+/**
+ * Decode base64 encoded text
+ */
+function decodeBase64(text) {
+    try {
+        // Remove whitespace and newlines
+        text = text.replace(/\s/g, '');
+        // Decode base64
+        return atob(text);
+    } catch (e) {
+        console.error('Failed to decode base64:', e);
+        return text; // Return original if decode fails
+    }
 }

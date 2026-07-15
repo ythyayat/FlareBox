@@ -17,13 +17,30 @@ function copyToClipboard(text) {
         // Fallback for older browsers
         const textarea = document.createElement('textarea');
         textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
         document.body.appendChild(textarea);
         textarea.select();
-        document.execCommand('copy');
+        try {
+            document.execCommand('copy');
+            showToast('Copied to clipboard!');
+        } catch (copyErr) {
+            console.error('Fallback copy failed:', copyErr);
+            showToast('Failed to copy to clipboard');
+        }
         document.body.removeChild(textarea);
-        showToast('Copied to clipboard!');
     });
 }
+
+// Handle copy button clicks with data attributes (for dynamically loaded content)
+document.addEventListener('click', function (e) {
+    // Check if the clicked element or its parent is a copy button with data-email
+    const copyBtn = e.target.closest('.copy-email-btn');
+    if (copyBtn && copyBtn.dataset.email) {
+        e.preventDefault();
+        copyToClipboard(copyBtn.dataset.email);
+    }
+});
 
 // Toggle API Key Visibility
 function toggleKey(elementId, fullKey) {

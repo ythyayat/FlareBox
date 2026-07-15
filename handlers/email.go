@@ -83,7 +83,7 @@ func DashboardAddressesHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Render email addresses
 	for _, addr := range addresses {
-		timeAgo := formatTimeAgo(addr.LatestDate)
+		timeAgo := formatTimeAgoCompact(addr.LatestDate)
 		safeID := "emails-" + sanitizeForID(addr.Domain) + "-" + sanitizeForID(addr.Username)
 		html := `<div class="email-address-item">
 			<div class="email-address-row" 
@@ -92,9 +92,10 @@ func DashboardAddressesHandler(w http.ResponseWriter, r *http.Request) {
 				hx-swap="innerHTML">
 				<div class="address-info">
 					<span class="email-address">` + addr.Address + `</span>
-					<span class="email-meta">
-						<span class="email-count">` + strconv.Itoa(addr.Count) + ` email` + plural(addr.Count) + `</span>
-						<span class="email-time">` + timeAgo + `</span>
+					<span class="email-meta-badge">
+						<span class="badge-count">` + strconv.Itoa(addr.Count) + `</span>
+						<span class="badge-sep">·</span>
+						<span class="badge-time">` + timeAgo + `</span>
 					</span>
 				</div>
 				<span class="material-icons expand-icon">expand_more</span>
@@ -227,6 +228,35 @@ func formatTimeAgo(t time.Time) string {
 		return strconv.Itoa(days) + " day" + plural(days) + " ago"
 	} else {
 		return emailTime.Format("Jan 2, 2006")
+	}
+}
+
+func formatTimeAgoCompact(t time.Time) string {
+	// Normalize to UTC for consistent comparison
+	now := time.Now().UTC()
+	emailTime := t.UTC()
+
+	// Handle future dates or equal times
+	if emailTime.After(now) || emailTime.Equal(now) {
+		return "now"
+	}
+
+	// Calculate duration
+	duration := now.Sub(emailTime)
+
+	if duration < time.Minute {
+		return "now"
+	} else if duration < time.Hour {
+		mins := int(duration.Minutes())
+		return strconv.Itoa(mins) + "m"
+	} else if duration < 24*time.Hour {
+		hours := int(duration.Hours())
+		return strconv.Itoa(hours) + "h"
+	} else if duration < 30*24*time.Hour {
+		days := int(duration.Hours() / 24)
+		return strconv.Itoa(days) + "d"
+	} else {
+		return emailTime.Format("Jan 2")
 	}
 }
 

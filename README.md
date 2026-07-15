@@ -2,6 +2,8 @@
 
 A complete email management system with web dashboard, webhook API, and intelligent email generator. Designed to receive emails from Cloudflare Email Workers, manage domains, and generate unique temporary email addresses with support for Indonesian and Western names.
 
+<video src="https://github.com/user-attachments/assets/15a12107-f312-484e-ae35-5af4a357f62d" autoplay loop muted playsinline></video>
+
 ## ✨ Features
 
 ### 🎨 Web Dashboard
@@ -361,16 +363,9 @@ For production deployment:
 
 ## 📚 Documentation
 
-- **API Testing Guide**: See `API_TESTING.md` for detailed API examples
 - **Cloudflare Worker**: See `cloudflare-worker.js` for email forwarding setup
-- **Test Script**: Use `test_api.sh` for quick API testing
 
 ## 🛠️ Development
-
-Run tests:
-```bash
-go test ./...
-```
 
 Format code:
 ```bash
